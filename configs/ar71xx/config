@@ -1,0 +1,42 @@
+CONFIG_TARGET_ar71xx=y
+CONFIG_TARGET_ar71xx_generic=y
+CONFIG_TARGET_ar71xx_generic_Default=y
+CONFIG_KMOD_BATMAN_ADV_BATCTL=y
+CONFIG_KMOD_BATMAN_ADV_BLA=y
+CONFIG_KMOD_BATMAN_ADV_DAT=y
+CONFIG_PACKAGE_blkid=y
+CONFIG_PACKAGE_block-mount=y
+# CONFIG_PACKAGE_dnsmasq is not set
+CONFIG_PACKAGE_dnsmasq-dhcpv6=y
+CONFIG_PACKAGE_e2fsprogs=y
+CONFIG_PACKAGE_ip=y
+CONFIG_PACKAGE_iputils-ping=y
+CONFIG_PACKAGE_iputils-ping6=y
+CONFIG_PACKAGE_iwinfo=y
+CONFIG_PACKAGE_kmod-ath9k-htc=y
+CONFIG_PACKAGE_kmod-batman-adv=y
+CONFIG_PACKAGE_kmod-crypto-crc32c=y
+CONFIG_PACKAGE_kmod-fs-ext4=y
+CONFIG_PACKAGE_kmod-lib-crc16=y
+CONFIG_PACKAGE_kmod-lib-crc32c=y
+# CONFIG_PACKAGE_kmod-ppp is not set
+CONFIG_PACKAGE_libblkid=y
+CONFIG_PACKAGE_libcom_err=y
+CONFIG_PACKAGE_libext2fs=y
+CONFIG_PACKAGE_libiw=y
+CONFIG_PACKAGE_libiwinfo=y
+CONFIG_PACKAGE_liblua=y
+CONFIG_PACKAGE_libncurses=y
+CONFIG_PACKAGE_libpthread=y
+CONFIG_PACKAGE_librt=y
+CONFIG_PACKAGE_libuuid=y
+CONFIG_PACKAGE_lua=y
+CONFIG_PACKAGE_luasocket=y
+CONFIG_PACKAGE_mtr=y
+# CONFIG_PACKAGE_ppp is not set
+CONFIG_PACKAGE_sfdisk=y
+CONFIG_PACKAGE_swap-utils=y
+CONFIG_PACKAGE_terminfo=y
+CONFIG_PACKAGE_vim=y
+CONFIG_PACKAGE_wireless-tools=y
+CONFIG_PACKAGE_kmod-lib-crc-ccitt=y
