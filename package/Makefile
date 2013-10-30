@@ -16,7 +16,12 @@ else
   $(curdir)/builddirs-prereq:=. $(sort $(prereq-y) $(prereq-m))
 endif
 ifneq ($(IGNORE_ERRORS),)
-  $(curdir)/builddirs-ignore-compile:= $(if $(filter n m y, $(IGNORE_ERRORS)),$(foreach m,$(IGNORE_ERRORS),$(package-$(subst n,,$(m)))),$(package-m) $(package-))
+  package-y-filter := $(package-y)
+  package-m-filter := $(filter-out $(package-y),$(package-m))
+  package-n-filter := $(filter-out $(package-y) $(package-m),$(package-))
+  package-ignore-errors := $(filter n m y,$(IGNORE_ERRORS))
+  package-ignore-errors := $(if $(package-ignore-errors),$(package-ignore-errors),n m)
+  $(curdir)/builddirs-ignore-compile := $(foreach m,$(package-ignore-errors),$(package-$(m)-filter))
 endif
 
 ifdef CONFIG_USE_MKLIBS
@@ -29,20 +34,18 @@ ifdef CONFIG_USE_MKLIBS
 	# find all loadable objects that are not regular libraries and add them to the list as well
 	find $(STAGING_DIR_ROOT) -type f -name \*.so\* -exec \
 		file -r -N -F '' {} + | \
-		awk ' /shared object/ { print $$1 }' >> $(TMP_DIR)/mklibs-progs
+		awk ' /shared object/ { print $$1 }' > $(TMP_DIR)/mklibs-libs
 	mkdir -p $(TMP_DIR)/mklibs-out
 	$(STAGING_DIR_HOST)/bin/mklibs -D \
 		-d $(TMP_DIR)/mklibs-out \
 		--sysroot $(STAGING_DIR_ROOT) \
-		-L /lib \
-		-L /usr/lib \
-		-L /usr/lib/ebtables \
+		`cat $(TMP_DIR)/mklibs-libs | sed 's:/*[^/]\+/*$$::' | uniq | sed 's:^$(STAGING_DIR_ROOT):-L :'` \
 		--ldlib $(patsubst $(STAGING_DIR_ROOT)/%,/%,$(firstword $(wildcard \
 			$(foreach name,ld-uClibc.so.* ld-linux.so.* ld-*.so, \
 			  $(STAGING_DIR_ROOT)/lib/$(name) \
 			)))) \
 		--target $(REAL_GNU_TARGET_NAME) \
-		`cat $(TMP_DIR)/mklibs-progs` 2>&1
+		`cat $(TMP_DIR)/mklibs-progs $(TMP_DIR)/mklibs-libs` 2>&1
 	$(RSTRIP) $(TMP_DIR)/mklibs-out
 	for lib in `ls $(TMP_DIR)/mklibs-out/*.so.* 2>/dev/null`; do \
 		LIB="$${lib##*/}"; \
@@ -117,10 +120,35 @@ $(curdir)/install: $(TMP_DIR)/.build
 	$(if $(CONFIG_CLEAN_IPKG),rm -rf $(TARGET_DIR)/usr/lib/opkg)
 	$(call mklibs)
 
+PASSOPT=""
+PASSARG=""
+ifndef CONFIG_OPKGSMIME_PASSPHRASE
+  ifneq ($(call qstrip,$(CONFIG_OPKGSMIME_PASSFILE)),)
+    PASSOPT="-passin"
+    PASSARG="file:$(call qstrip,$(CONFIG_OPKGSMIME_PASSFILE))"
+  endif
+endif
+
 $(curdir)/index: FORCE
-	@(cd $(PACKAGE_DIR); $(SCRIPT_DIR)/ipkg-make-index.sh . 2>&1 > Packages && \
-		gzip -9c Packages > Packages.gz \
-	)
+	@echo Generating package index...
+	@(cd $(PACKAGE_DIR); \
+		$(SCRIPT_DIR)/ipkg-make-index.sh . 2>&1 > Packages && \
+		gzip -9c Packages > Packages.gz )
+ifeq ($(call qstrip,$(CONFIG_OPKGSMIME_KEY)),)
+	@echo Signing key has not been configured
+else
+ifeq ($(call qstrip,$(CONFIG_OPKGSMIME_CERT)),)
+	@echo Certificate has not been configured
+else
+	@echo Signing package index...
+	@(cd $(PACKAGE_DIR); \
+		openssl smime -binary -in Packages.gz \
+			-out Packages.sig -outform PEM -sign \
+			-signer $(CONFIG_OPKGSMIME_CERT) \
+			-inkey $(CONFIG_OPKGSMIME_KEY) \
+			$(PASSOPT) $(PASSARG) )
+endif
+endif
 
 $(curdir)/preconfig:
 

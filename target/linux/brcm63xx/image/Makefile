@@ -1,4 +1,4 @@
-# 
+#
 # Copyright (C) 2006-2011 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
@@ -10,9 +10,6 @@ include $(INCLUDE_DIR)/image.mk
 LOADADDR = 0x80010000		# RAM start + 16M 
 KERNEL_ENTRY = $(LOADADDR)	# Newer kernels add a jmp to the kernel_entry at the start of the binary
 RAMSIZE = 0x01000000		# 64MB
-
-DROP_SECTIONS := .reginfo .mdebug .comment .note .pdr .options .MIPS.options
-OBJCOPY_BIN := $(TARGET_CROSS)objcopy -S -O binary $(addprefix --remove-section=,$(DROP_SECTIONS))
 
 LOADER_MAKEOPTS= \
 		KDIR=$(KDIR) \
@@ -133,8 +130,6 @@ define Build/Clean
 endef
 
 define Image/Prepare
-	# Binary kernel
-	$(OBJCOPY_BIN) $(LINUX_DIR)/vmlinux $(KDIR)/vmlinux.bin
 	# Standard LZMA kernel
 	cat $(KDIR)/vmlinux | $(STAGING_DIR_HOST)/bin/lzma e -si -so -eos -lc1 -lp2 -pb2 > $(KDIR)/vmlinux.lzma
 
@@ -162,10 +157,14 @@ define Image/Prepare
 	$(call prepare_generic_squashfs,$(KDIR)/fs_mark)
 endef
 
+define Image/Build/Initramfs
+	# Netgear CVG834G
+	$(call Image/Build/HCS,initramfs,cvg834g,a020,0001,0022,$(KDIR)/vmlinux-initramfs)
+endef
+
 define Image/Build
 	dd if=$(KDIR)/root.$(1) of=$(BIN_DIR)/$(IMG_PREFIX)-root.$(1) bs=128k conv=sync
 	# Various routers
-  ifeq ($(CONFIG_TARGET_brcm63xx_generic),y)
 	$(call Image/Build/CFE,$(1),96328avng,6328,96328avng-4M-flash-generic,,--pad 2)
 	$(call Image/Build/CFE,$(1),96328avng,6328,96328avng-8M-flash-generic,,--pad 4)
 	$(call Image/Build/CFE,$(1),96328avng,6328,96328avng-16M-flash-generic,,--pad 8)
@@ -188,11 +187,9 @@ define Image/Build
 	$(call Image/Build/CFE,$(1),96348A-122,6348,96348A-122-generic)
 	$(call Image/Build/CFE,$(1),96358VW,6358,96358VW-generic)
 	$(call Image/Build/CFE,$(1),96358VW2,6358,96358VW2-generic)
-  endif
 	$(call Image/Build/CFE,$(1),96368MVNgr,6368,96368MVNgr-generic)
 	$(call Image/Build/CFE,$(1),96368MVWG,6368,96368MVWG-generic)
 
-  ifeq ($(CONFIG_TARGET_brcm63xx_generic),y)
 	# BT Voyager V210_BTR
 	$(call Image/Build/CFE,$(1),V210_BB,6348,BTV210_BTR,,--layoutver 5)
 	# BT Voyager V210_ROI, V210_WB
@@ -217,12 +214,10 @@ define Image/Build
 	$(call Image/Build/CFEFIXUP,$(1),96348GW,GW6200,6348,GW6200,$(shell printf '\x99'))
 	# Neufbox4
 	$(call Image/Build/CFE,$(1),96358VW,6358,NEUFBOX4,OpenWRT-$(REVISION))
-  endif
 
 	# Neufbox6
 	$(call Image/Build/CFE,$(1),NB6-SER-r0,6362,NEUFBOX6,OpenWRT-$(REVISION))
 
-  ifeq ($(CONFIG_TARGET_brcm63xx_generic),y)
 	# Comtrend 6373
 	$(call Image/Build/CFE,$(1),CT6373-1,6358,CT6373)
 	# Comtrend 536, 5621
@@ -292,7 +287,10 @@ define Image/Build
 	$(call Image/Build/SPW303V,$(1),96358-502V,6358,SPW303V)
 
 	# Netgear CVG834G
-	$(call Image/Build/HCS,$(1),cvg834g,a020,0001,0022,$(KDIR)/vmlinux.bin)
+	$(call Image/Build/HCS,$(1),cvg834g,a020,0001,0022,$(KDIR)/vmlinux)
+
+  ifeq ($(CONFIG_TARGET_ROOTFS_INITRAMFS),y)
+	$(call Image/Build/Initramfs)
   endif
 endef
 

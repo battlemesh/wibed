@@ -16,10 +16,12 @@ endif
 tools-y += m4 libtool autoconf automake flex bison pkg-config sed mklibs
 tools-y += sstrip ipkg-utils genext2fs e2fsprogs mtd-utils mkimage
 tools-y += firmware-utils patch-image patch quilt yaffs2 flock padjffs2
-tools-y += mm-macros xorg-macros xfce-macros missing-macros xz cmake scons
+tools-y += mm-macros xorg-macros xfce-macros missing-macros xz cmake scons bc
+tools-y += findutils
 tools-$(CONFIG_TARGET_orion_generic) += wrt350nv2-builder upslug2
 tools-$(CONFIG_powerpc) += upx
 tools-$(CONFIG_TARGET_x86) += qemu
+tools-$(CONFIG_TARGET_mxs) += elftosb
 tools-$(CONFIG_TARGET_brcm2708) += mtools dosfstools
 ifneq ($(CONFIG_TARGET_ar71xx),)
 tools-y += lzma-old squashfs
@@ -27,10 +29,6 @@ endif
 tools-y += lzma squashfs4
 ifneq ($(CONFIG_PACKAGE_kmod-b43)$(CONFIG_PACKAGE_kmod-b43legacy)$(CONFIG_BRCMSMAC_USE_FW_FROM_WL),)
 tools-y += b43-tools
-endif
-
-ifneq ($(CONFIG_PACKAGE_firmwarehotplug),)
-tools-y += sdcc
 endif
 
 ifdef CONFIG_GCC_USE_GRAPHITE
@@ -47,7 +45,7 @@ $(curdir)/pkg-config/compile := $(curdir)/sed/install
 $(curdir)/libtool/compile := $(curdir)/sed/install
 $(curdir)/squashfs/compile := $(curdir)/lzma-old/install
 $(curdir)/squashfs4/compile := $(curdir)/xz/install
-$(curdir)/quilt/compile := $(curdir)/sed/install $(curdir)/autoconf/install
+$(curdir)/quilt/compile := $(curdir)/sed/install $(curdir)/autoconf/install $(curdir)/findutils/install
 $(curdir)/dtc/compile := $(curdir)/bison/install
 $(curdir)/autoconf/compile := $(curdir)/m4/install $(curdir)/libtool/install
 $(curdir)/automake/compile := $(curdir)/m4/install $(curdir)/autoconf/install $(curdir)/pkg-config/install $(curdir)/xz/install
@@ -69,11 +67,16 @@ $(curdir)/e2fsprogs/compile := $(curdir)/automake/install
 $(curdir)/libelf/compile := $(curdir)/automake/install
 $(curdir)/sdcc/compile := $(curdir)/bison/install
 $(curdir)/b43-tools/compile := $(curdir)/bison/install
+$(curdir)/padjffs2/compile := $(curdir)/findutils/install
 
 ifneq ($(CONFIG_CCACHE),)
 $(foreach tool, $(tools-y), $(eval $(curdir)/$(tool)/compile += $(curdir)/ccache/install))
 tools-y += ccache
 endif
+
+# in case there is no patch tool on the host we need to make patch tool a
+# dependency for tools which have patches directory
+$(foreach tool, $(tools-y), $(if $(wildcard $(curdir)/$(tool)/patches),$(eval $(curdir)/$(tool)/compile += $(curdir)/patch/install)))
 
 $(curdir)/builddirs := $(tools-y) $(tools-dep) $(tools-)
 $(curdir)/builddirs-default := $(tools-y)
@@ -126,7 +129,6 @@ $(STAGING_DIR_HOST)/bin/stat: $(STAGING_DIR)/.prepared
 		false; \
 	fi
 
-$(eval $(call PrepareCommand,find,gfind find))
 $(eval $(call PrepareCommand,md5sum,gmd5sum md5sum $(SCRIPT_DIR)/md5sum))
 $(eval $(call PrepareCommand,cp,gcp cp))
 $(eval $(call PrepareCommand,seq,gseq seq))
@@ -137,7 +139,7 @@ $(eval $(call PrepareCommand,grep,ggrep grep))
 $(eval $(call PrepareCommand,tar,gtar tar))
 $(eval $(call PrepareCommand,diff,gdiff diff))
 
-$(curdir)/cmddeps = $(patsubst %,$(STAGING_DIR_HOST)/bin/%,find md5sum cp stat seq python awk getopt grep tar diff)
+$(curdir)/cmddeps = $(patsubst %,$(STAGING_DIR_HOST)/bin/%,md5sum cp stat seq python awk getopt grep tar diff)
 $(curdir)//prepare = $(STAGING_DIR)/.prepared $(STAGING_DIR_HOST)/.prepared $($(curdir)/cmddeps)
 $(curdir)//compile = $(STAGING_DIR)/.prepared $(STAGING_DIR_HOST)/.prepared $($(curdir)/cmddeps)
 
