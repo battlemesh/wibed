@@ -1,0 +1,31 @@
+config libremap
+        list api_url 'http://libremap.net/api/'
+        list api_url 'http://libremap.berlin.freifunk.net/api'
+        option fetch_by_name '1'
+        option community 'wibed-upc'
+
+config plugin 'altermap'
+        option enabled '0'
+
+config plugin 'contact'
+        option enabled '0'
+        option name 'HOSTNAME'
+        option email 'MAIL'
+
+config plugin 'freifunk'
+        option enabled '0'
+
+config plugin 'location'
+        option enabled '1'
+        option latitude '41.389052512363044'
+        option longitude '2.1116656064987183'
+        option elev '0'
+
+config plugin 'olsr'
+        option enabled '0'
+
+config plugin 'system'
+        option enabled '1'
+
+config plugin 'wireless'
+        option enabled '1'
