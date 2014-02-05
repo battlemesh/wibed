@@ -1,7 +1,6 @@
 CONFIG_TARGET_ar71xx=y
 CONFIG_TARGET_ar71xx_generic=y
 CONFIG_TARGET_ar71xx_generic_Default=y
-CONFIG_BUSYBOX_CONFIG_NC_SERVER=y
 CONFIG_KMOD_BATMAN_ADV_BATCTL=y
 CONFIG_KMOD_BATMAN_ADV_BLA=y
 CONFIG_KMOD_BATMAN_ADV_DAT=y
@@ -27,6 +26,7 @@ CONFIG_PACKAGE_iwinfo=y
 CONFIG_PACKAGE_kmod-ath9k-htc=y
 CONFIG_PACKAGE_kmod-batman-adv=y
 CONFIG_PACKAGE_kmod-crypto-crc32c=y
+CONFIG_PACKAGE_kmod-crypto-hash=y
 CONFIG_PACKAGE_kmod-dummy=y
 CONFIG_PACKAGE_kmod-fs-ext4=y
 CONFIG_PACKAGE_kmod-fs-vfat=y
@@ -80,6 +80,7 @@ CONFIG_PACKAGE_luci-sgi-cgi=y
 CONFIG_PACKAGE_luci-theme-base=y
 CONFIG_PACKAGE_luci-theme-bootstrap=y
 CONFIG_PACKAGE_mtr=y
+CONFIG_PACKAGE_openssh-client=y
 # CONFIG_PACKAGE_ppp is not set
 CONFIG_PACKAGE_sfdisk=y
 CONFIG_PACKAGE_swap-utils=y
