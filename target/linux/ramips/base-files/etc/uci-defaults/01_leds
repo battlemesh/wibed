@@ -47,6 +47,9 @@ case $board in
 	br6425)
 		set_wifi_led "edimax:orange:wlan"
 		;;
+	br-6475nd)
+		set_wifi_led "edimax:amber:wlan"
+		;;
 	broadway)
 		set_usb_led "red:diskmounted"
 		set_wifi_led "red:wps_active"
@@ -92,6 +95,9 @@ case $board in
 	fonera20n)
 		set_usb_led "fonera20n:orange:usb"
 		set_wifi_led "fonera20n:orange:wifi"
+		;;
+	hlk-rm04)
+		set_wifi_led "rt2800pci-phy0::radio"
 		;;
 	all0239-3g|\
 	hw550-3g)
@@ -140,6 +146,13 @@ case $board in
 		;;
 	wnce2001)
 		set_wifi_led "netgear:green:wlan"
+		;;
+	rt-n14u)
+		ucidef_set_led_default "power" "power" "asus:blue:power" "1"
+		ucidef_set_led_netdev "lan" "lan" "asus:blue:lan" "eth0.1"
+		ucidef_set_led_netdev "wan" "wan" "asus:blue:wan" "eth0.2"
+		set_wifi_led "asus:blue:air"
+		set_usb_led "asus:blue:usb"
 		;;
 	rp-n53)
 		ucidef_set_led_netdev "eth" "Network" "asus:white:back" "eth0"

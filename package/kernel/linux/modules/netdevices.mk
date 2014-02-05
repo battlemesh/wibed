@@ -500,7 +500,7 @@ $(eval $(call KernelPackage,pcnet32))
 define KernelPackage/tg3
   TITLE:=Broadcom Tigon3 Gigabit Ethernet
   KCONFIG:=CONFIG_TIGON3
-  DEPENDS:=+!TARGET_brcm47xx:kmod-libphy +!LINUX_3_3:kmod-hwmon-core +(LINUX_3_8||LINUX_3_9||LINUX_3_10||LINUX_3_12):kmod-ptp
+  DEPENDS:=+!TARGET_brcm47xx:kmod-libphy +!LINUX_3_3:kmod-hwmon-core +(!LINUX_3_3&&!LINUX_3_6):kmod-ptp
   SUBMENU:=$(NETWORK_DEVICES_MENU)
   FILES:=$(LINUX_DIR)/drivers/net/ethernet/broadcom/tg3.ko
   AUTOLOAD:=$(call AutoLoad,19,tg3,1)
@@ -756,3 +756,19 @@ define KernelPackage/gianfar/description
 endef
 
 $(eval $(call KernelPackage,gianfar))
+
+
+define KernelPackage/vmxnet3
+  SUBMENU:=$(NETWORK_DEVICES_MENU)
+  TITLE:=VMware VMXNET3 ethernet driver 
+  DEPENDS:=@PCI_SUPPORT
+  KCONFIG:=CONFIG_VMXNET3
+  FILES:=$(LINUX_DIR)/drivers/net/vmxnet3/vmxnet3.ko
+  AUTOLOAD:=$(call AutoLoad,35,vmxnet3)
+endef
+
+define KernelPackage/vmxnet3/description
+ Kernel modules for VMware VMXNET3 ethernet adapters.
+endef
+
+$(eval $(call KernelPackage,vmxnet3))

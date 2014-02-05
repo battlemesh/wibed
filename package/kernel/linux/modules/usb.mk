@@ -74,8 +74,18 @@ define KernelPackage/usb-eth-gadget
 	CONFIG_USB_ETH_RNDIS=y \
 	CONFIG_USB_ETH_EEM=y
   DEPENDS:=+kmod-usb-gadget +(!LINUX_3_3&&!LINUX_3_6):kmod-usb-lib-composite
+ifneq ($(wildcard $(LINUX_DIR)/drivers/usb/gadget/u_ether.ko),)
+  FILES:= \
+	$(LINUX_DIR)/drivers/usb/gadget/u_ether.ko \
+	$(LINUX_DIR)/drivers/usb/gadget/u_rndis.ko \
+	$(LINUX_DIR)/drivers/usb/gadget/usb_f_rndis.ko \
+	$(LINUX_DIR)/drivers/usb/gadget/usb_f_eem.ko \
+	$(LINUX_DIR)/drivers/usb/gadget/g_ether.ko
+  AUTOLOAD:=$(call AutoLoad,52,g_ether)
+else
   FILES:=$(LINUX_DIR)/drivers/usb/gadget/g_ether.ko
   AUTOLOAD:=$(call AutoLoad,52,g_ether)
+endif
   $(call AddDepends/usb)
 endef
 
@@ -112,6 +122,7 @@ define KernelPackage/usb-ohci
 	CONFIG_USB_OHCI_ATH79=y \
 	CONFIG_USB_OHCI_BCM63XX=y \
 	CONFIG_USB_OCTEON_OHCI=y \
+	CONFIG_USB_OHCI_HCD_OMAP3=y \
 	CONFIG_USB_OHCI_HCD_PLATFORM=y
   FILES:=$(LINUX_DIR)/drivers/usb/host/ohci-hcd.ko
   AUTOLOAD:=$(call AutoLoad,50,ohci-hcd,1)
@@ -178,7 +189,7 @@ $(eval $(call KernelPackage,usb2))
 
 define KernelPackage/usb2-pci
   TITLE:=Support for PCI USB2 controllers
-  DEPENDS:=@PCI_SUPPORT @(LINUX_3_8||LINUX_3_9||LINUX_3_10) +kmod-usb2
+  DEPENDS:=@PCI_SUPPORT @(!LINUX_3_3&&!LINUX_3_6) +kmod-usb2
   KCONFIG:=CONFIG_USB_EHCI_PCI
   FILES:=$(LINUX_DIR)/drivers/usb/host/ehci-pci.ko
   AUTOLOAD:=$(call AutoLoad,42,ehci-pci,1)
@@ -736,7 +747,13 @@ define KernelPackage/usb-net
   TITLE:=Kernel modules for USB-to-Ethernet convertors
   KCONFIG:=CONFIG_USB_USBNET CONFIG_MII=y
   AUTOLOAD:=$(call AutoProbe,usbnet)
+ifeq ($(strip $(call CompareKernelPatchVer,$(KERNEL_PATCHVER),lt,3.12.0)),1)
   FILES:=$(LINUX_DIR)/drivers/$(USBNET_DIR)/usbnet.ko
+else
+  FILES:=\
+	$(LINUX_DIR)/drivers/$(USBNET_DIR)/usbnet.ko \
+	$(LINUX_DIR)/drivers/net/mii.ko
+endif
   $(call AddDepends/usb)
 endef
 
@@ -1062,11 +1079,19 @@ define KernelPackage/usb-chipidea
 	CONFIG_USB_CHIPIDEA_HOST=y \
 	CONFIG_USB_CHIPIDEA_UDC=n \
 	CONFIG_USB_CHIPIDEA_DEBUG=y
+ifeq ($(strip $(call CompareKernelPatchVer,$(KERNEL_PATCHVER),lt,3.11.0)),1)
   FILES:=\
 	$(LINUX_DIR)/drivers/usb/chipidea/ci_hdrc.ko \
 	$(if $(CONFIG_OF_DEVICE),$(LINUX_DIR)/drivers/usb/chipidea/ci13xxx_imx.ko) \
 	$(if $(CONFIG_OF_DEVICE),$(LINUX_DIR)/drivers/usb/chipidea/usbmisc_imx$(if $(call kernel_patchver_le,3.9),6q).ko)
   AUTOLOAD:=$(call AutoLoad,51,ci_hdrc $(if $(CONFIG_OF_DEVICE),ci13xxx_imx usbmisc_imx$(if $(call kernel_patchver_le,3.9),6q)),1)
+else
+  FILES:=\
+	$(LINUX_DIR)/drivers/usb/chipidea/ci_hdrc.ko \
+	$(if $(CONFIG_OF),$(LINUX_DIR)/drivers/usb/chipidea/ci_hdrc_imx.ko) \
+	$(if $(CONFIG_OF),$(LINUX_DIR)/drivers/usb/chipidea/usbmisc_imx.ko)
+  AUTOLOAD:=$(call AutoLoad,51,ci_hdrc $(if $(CONFIG_OF),ci_hdrc_imx usbmisc_imx),1)
+endif
   $(call AddDepends/usb)
 endef
   
@@ -1107,3 +1132,21 @@ define KernelPackage/usbmon/description
 endef
 
 $(eval $(call KernelPackage,usbmon))
+
+
+define KernelPackage/usb3
+  TITLE:=Support for USB3 controllers
+  KCONFIG:= \
+	CONFIG_USB_XHCI_HCD \
+	CONFIG_USB_XHCI_HCD_DEBUGGING=n
+  FILES:= \
+	$(LINUX_DIR)/drivers/usb/host/xhci-hcd.ko
+  AUTOLOAD:=$(call AutoLoad,54,xhci-hcd,1)
+  $(call AddDepends/usb)
+endef
+
+define KernelPackage/usb3/description
+ Kernel support for USB3 (XHCI) controllers
+endef
+
+$(eval $(call KernelPackage,usb3))
