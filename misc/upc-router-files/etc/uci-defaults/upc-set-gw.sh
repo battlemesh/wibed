@@ -4,8 +4,8 @@ echo "Configuring Wibed gateway"
 
 uci batch << EOF
 set network.upc=route
-set network.upc.target=0.0.0.0
-set network.upc.netmask=0.0.0.0
+set network.upc.target=147.83.0.0
+set network.upc.netmask=255.255.0.0
 set network.upc.gateway=10.8.10.9
 set network.upc.interface=wan
 set network.wan=interface
