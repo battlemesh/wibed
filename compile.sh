@@ -10,6 +10,7 @@ VERSION="${GIT_BRANCH}.$GIT_HASH"
 rename() {
 	echo "Renaming binaries"
 	for D in bin/*; do
+		rm -f bin/$D/${BASE}.*
 		for f in $D/*.bin; do
 			newname="$(echo $f | sed s/openwrt/$BASE.$VERSION/g)"
 			mv $f $newname
