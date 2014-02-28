@@ -25,7 +25,7 @@ $(eval $(call KernelPackage,fs-autofs4))
 define KernelPackage/fs-btrfs
   SUBMENU:=$(FS_MENU)
   TITLE:=BTRFS filesystem support
-  DEPENDS:=+kmod-lib-crc32c +kmod-lib-lzo +kmod-lib-zlib +(LINUX_3_9||LINUX_3_10||LINUX_3_12):kmod-lib-raid6 +(LINUX_3_9||LINUX_3_10||LINUX_3_12):kmod-lib-xor
+  DEPENDS:=+kmod-lib-crc32c +kmod-lib-lzo +kmod-lib-zlib +(!LINUX_3_3&&!LINUX_3_6&&!LINUX_3_8):kmod-lib-raid6 +(!LINUX_3_3&&!LINUX_3_6&&!LINUX_3_8):kmod-lib-xor
   KCONFIG:=\
 	CONFIG_BTRFS_FS \
 	CONFIG_BTRFS_FS_POSIX_ACL=n \
@@ -377,3 +377,19 @@ define KernelPackage/fs-xfs/description
 endef
 
 $(eval $(call KernelPackage,fs-xfs))
+
+
+define KernelPackage/fs-jfs
+  SUBMENU:=$(FS_MENU)
+  TITLE:=JFS filesystem support
+  KCONFIG:=CONFIG_JFS_FS
+  FILES:=$(LINUX_DIR)/fs/jfs/jfs.ko
+  AUTOLOAD:=$(call AutoLoad,30,jfs,1)
+  $(call AddDepends/nls)
+endef
+
+define KernelPackage/fs-jfs/description
+ Kernel module for JFS support
+endef
+
+$(eval $(call KernelPackage,fs-jfs))
