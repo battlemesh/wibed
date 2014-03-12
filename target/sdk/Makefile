@@ -20,9 +20,35 @@ EXCLUDE_DIRS:=*/ccache \
 	*/stamp \
 	*/stampfiles \
 	*/man \
-	*/info
+	*/info \
+
+SDK_DIRS = \
+		staging_dir/host \
+		staging_dir/target-$(ARCH)$(ARCH_SUFFIX)_$(LIBC)-$(LIBCV)$(if $(CONFIG_arm),_eabi) \
+		staging_dir/toolchain-$(ARCH)$(ARCH_SUFFIX)_gcc-$(GCCV)_$(LIBC)-$(LIBCV)$(if $(CONFIG_arm),_eabi) \
 
 SVN_PACKAGE_URL=$(shell svn info ../../package | awk '/^URL:/ { print $$2; }')
+
+KDIR_BASE = $(patsubst $(TOPDIR)/%,%,$(LINUX_DIR))
+
+KERNEL_FILES_ARCH = \
+	Makefile* \
+	module.lds \
+	Kbuild.platforms \
+	*/Platform \
+	include \
+	scripts \
+	kernel/asm-offsets.s
+
+KERNEL_FILES_BASE := \
+	.config \
+	Makefile \
+	scripts \
+	include \
+	Module.symvers \
+	$(addprefix arch/$(LINUX_KARCH)/,$(KERNEL_FILES_ARCH))
+
+KERNEL_FILES := $(patsubst $(TOPDIR)/%,%,$(wildcard $(addprefix $(LINUX_DIR)/,$(KERNEL_FILES_BASE))))
 
 all: compile
 
@@ -31,15 +57,14 @@ $(BIN_DIR)/$(SDK_NAME).tar.bz2: clean
 	$(CP) $(INCLUDE_DIR) $(SCRIPT_DIR) $(TOPDIR)/docs $(SDK_BUILD_DIR)/
 	$(TAR) -cf - -C $(TOPDIR) \
 		$(foreach exclude,$(EXCLUDE_DIRS),--exclude="$(exclude)") \
-		--exclude="staging_dir/$(ARCH)" \
-		staging_dir/host staging_dir/target-$(ARCH)$(ARCH_SUFFIX)_$(LIBC)-$(LIBCV)$(if $(CONFIG_arm),_eabi) \
-		staging_dir/toolchain-$(ARCH)$(ARCH_SUFFIX)_gcc-$(GCCV)_$(LIBC)-$(LIBCV)$(if $(CONFIG_arm),_eabi) | \
+		$(SDK_DIRS) $(KERNEL_FILES) | \
 		$(TAR) -xf - -C $(SDK_BUILD_DIR)
 	mkdir -p $(SDK_BUILD_DIR)/target/linux
 	$(CP) $(GENERIC_PLATFORM_DIR) $(PLATFORM_DIR) $(SDK_BUILD_DIR)/target/linux/
 	rm -rf \
-		$(SDK_BUILD_DIR)/target/linux/*/files \
-		$(SDK_BUILD_DIR)/target/linux/*/patches
+		$(SDK_BUILD_DIR)/target/linux/*/files* \
+		$(SDK_BUILD_DIR)/target/linux/*/patches*
+	./convert-config.pl $(TOPDIR)/.config > $(SDK_BUILD_DIR)/Config-build.in
 	$(CP) -L \
 		$(TOPDIR)/LICENSE \
 		$(TOPDIR)/rules.mk \
@@ -49,7 +74,6 @@ $(BIN_DIR)/$(SDK_NAME).tar.bz2: clean
 		./files/README.SDK \
 		$(SDK_BUILD_DIR)/
 	$(CP) \
-		./files/package/rules.mk \
 		$(TOPDIR)/package/Makefile \
 		$(SDK_BUILD_DIR)/package/
 	$(if $(SVN_PACKAGE_URL),echo "src-svn trunk $(SVN_PACKAGE_URL)" \
