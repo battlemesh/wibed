@@ -16,10 +16,15 @@ rename() {
 			mv $f $newname
 			echo "$newname"
 		done
+		for f in $D/*.gz; do
+                       newname="$(echo $f | sed s/openwrt/$BASE.$VERSION/g)"
+                       mv $f $newname
+                       echo "$newname"
+               done
 	done
 	echo "Done!"
 }
 
-make -j4 V=s
+make -j4
 [ $? -eq 0 ] && rename
 
