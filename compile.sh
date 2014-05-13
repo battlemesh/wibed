@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#set -vx
+export LANGUAGE=C
+export LC_ALL=C
+export LANG=C
+
+export CPUSall="$(cat /proc/cpuinfo|grep proc|wc -l)"
+export CPUS=$(( $CPUSall - 2 ))
+
 BASE="WiBed"
 ./set_environment.sh
 
@@ -25,6 +33,6 @@ rename() {
 	echo "Done!"
 }
 
-make -j4 V=s
+make -j$CPUS V=s
 [ $? -eq 0 ] && rename
 
