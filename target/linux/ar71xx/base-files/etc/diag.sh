@@ -80,7 +80,11 @@ get_status_led() {
 	mr600v2)
 		status_led="mr600:blue:power"
 		;;
-	mynet-n600)
+	mynet-n600 | \
+	mynet-n750)
+		status_led="wd:blue:power"
+		;;
+	mynet-rext)
 		status_led="wd:blue:power"
 		;;
 	mzk-w04nu | \
@@ -98,12 +102,23 @@ get_status_led() {
 	pb44)
 		status_led="pb44:amber:jump1"
 		;;
+	rb-2011l|\
+	rb-2011uas|\
+	rb-2011uas-2hnd)
+		status_led="rb:green:usr"
+		;;
 	rb-411 | rb-411u | rb-433 | rb-433u | rb-450 | rb-450g | rb-493)
 		status_led="rb4xx:yellow:user"
 		;;
-       rb-750)
-               status_led="rb750:green:act"
-               ;;
+	rb-750)
+		status_led="rb750:green:act"
+		;;
+	rb-911g-2hpnd|\
+	rb-911g-5hpnd|\
+	rb-912uag-2hpnd|\
+	rb-912uag-5hpnd)
+		status_led="rb:green:user"
+		;;
 	routerstation | routerstation-pro)
 		status_led="ubnt:green:rf"
 		;;
@@ -123,24 +138,35 @@ get_status_led() {
 	tl-mr3020)
 		status_led="tp-link:green:wps"
 		;;
+	tl-wa750re)
+		status_led="tp-link:orange:re"
+		;;
+	tl-wa850re)
+		status_led="tp-link:blue:re"
+		;;
 	tl-mr3220 | \
 	tl-mr3220-v2 | \
 	tl-mr3420 | \
 	tl-mr3420-v2 | \
+	tl-wa801nd-v2 | \
 	tl-wa901nd | \
 	tl-wa901nd-v2 | \
+	tl-wa901nd-v3 | \
 	tl-wdr3500 | \
 	tl-wr1041n-v2 | \
 	tl-wr1043nd | \
+	tl-wr1043nd-v2 | \
 	tl-wr741nd | \
 	tl-wr741nd-v4 | \
 	tl-wr841n-v1 | \
 	tl-wr841n-v7 | \
 	tl-wr841n-v8 | \
+	tl-wr842n-v2 | \
 	tl-wr941nd)
 		status_led="tp-link:green:system"
 		;;
 	archer-c7 | \
+	tl-wdr4900-v2 | \
 	tl-mr10u | \
 	tl-mr13u | \
 	tl-wdr4300 | \

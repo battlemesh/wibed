@@ -22,7 +22,8 @@
 	};
 
 	ethernet@10100000 {
-                port@0 {
+       		mtd-mac-address = <&factory 0x4>;
+		port@0 {
 			ralink,fixed-link = <1000 1 1 1>;
 		};
 	};
@@ -78,7 +79,7 @@
 			read-only;
 		};
 
-		partition@40000 {
+		factory: partition@40000 {
 			reg = <0x00040000 0x00010000>;
 			label = "factory";
 			read-only;

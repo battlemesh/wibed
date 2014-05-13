@@ -6,7 +6,7 @@ error() {
 }
 
 TARGET=${1-ar71xx}
-
+#TARGET=${1-mpc85xx}
 [ ! -d configs/$TARGET ] && error "Target '${TARGET}' does not exist"
 
 echo "Updating feeds"

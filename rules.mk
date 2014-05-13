@@ -73,7 +73,7 @@ ifdef CONFIG_MIPS64_ABI
 endif
 
 DL_DIR:=$(if $(call qstrip,$(CONFIG_DOWNLOAD_FOLDER)),$(call qstrip,$(CONFIG_DOWNLOAD_FOLDER)),$(TOPDIR)/dl)
-BIN_DIR:=$(TOPDIR)/bin/$(BOARD)
+BIN_DIR:=$(if $(call qstrip,$(CONFIG_BINARY_FOLDER)),$(call qstrip,$(CONFIG_BINARY_FOLDER)),$(TOPDIR)/bin/$(BOARD))
 INCLUDE_DIR:=$(TOPDIR)/include
 SCRIPT_DIR:=$(TOPDIR)/scripts
 BUILD_DIR_BASE:=$(TOPDIR)/build_dir
@@ -87,11 +87,8 @@ ifeq ($(CONFIG_EXTERNAL_TOOLCHAIN),)
   GNU_TARGET_NAME=$(OPTIMIZE_FOR_CPU)-openwrt-linux
   DIR_SUFFIX:=_$(LIBC)-$(LIBCV)$(if $(CONFIG_arm),_eabi)
   BIN_DIR:=$(BIN_DIR)$(if $(CONFIG_USE_UCLIBC),,-$(LIBC))
-  BUILD_DIR:=$(BUILD_DIR_BASE)/target-$(ARCH)$(ARCH_SUFFIX)$(DIR_SUFFIX)$(if $(BUILD_SUFFIX),_$(BUILD_SUFFIX))
-  STAGING_DIR:=$(TOPDIR)/staging_dir/target-$(ARCH)$(ARCH_SUFFIX)$(DIR_SUFFIX)$(if $(BUILD_SUFFIX),_$(BUILD_SUFFIX))
-  BUILD_DIR_TOOLCHAIN:=$(BUILD_DIR_BASE)/toolchain-$(ARCH)$(ARCH_SUFFIX)_gcc-$(GCCV)$(DIR_SUFFIX)
-  TOOLCHAIN_DIR:=$(TOPDIR)/staging_dir/toolchain-$(ARCH)$(ARCH_SUFFIX)_gcc-$(GCCV)$(DIR_SUFFIX)
-  PACKAGE_DIR:=$(BIN_DIR)/packages
+  TARGET_DIR_NAME = target-$(ARCH)$(ARCH_SUFFIX)$(DIR_SUFFIX)$(if $(BUILD_SUFFIX),_$(BUILD_SUFFIX))
+  TOOLCHAIN_DIR_NAME = toolchain-$(ARCH)$(ARCH_SUFFIX)_gcc-$(GCCV)$(DIR_SUFFIX)
 else
   ifeq ($(CONFIG_NATIVE_TOOLCHAIN),)
     GNU_TARGET_NAME=$(call qstrip,$(CONFIG_TARGET_NAME))
@@ -99,12 +96,15 @@ else
     GNU_TARGET_NAME=$(shell gcc -dumpmachine)
   endif
   REAL_GNU_TARGET_NAME=$(GNU_TARGET_NAME)
-  BUILD_DIR:=$(BUILD_DIR_BASE)/target-$(GNU_TARGET_NAME)$(if $(BUILD_SUFFIX),_$(BUILD_SUFFIX))
-  STAGING_DIR:=$(TOPDIR)/staging_dir/target-$(GNU_TARGET_NAME)$(if $(BUILD_SUFFIX),_$(BUILD_SUFFIX))
-  BUILD_DIR_TOOLCHAIN:=$(BUILD_DIR_BASE)/toolchain-$(GNU_TARGET_NAME)
-  TOOLCHAIN_DIR:=$(TOPDIR)/staging_dir/toolchain-$(GNU_TARGET_NAME)
-  PACKAGE_DIR:=$(BIN_DIR)/packages
+  TARGET_DIR_NAME:=target-$(GNU_TARGET_NAME)$(if $(BUILD_SUFFIX),_$(BUILD_SUFFIX))
+  TOOLCHAIN_DIR_NAME:=toolchain-$(GNU_TARGET_NAME)
 endif
+
+PACKAGE_DIR:=$(BIN_DIR)/packages
+BUILD_DIR:=$(BUILD_DIR_BASE)/$(TARGET_DIR_NAME)
+STAGING_DIR:=$(TOPDIR)/staging_dir/$(TARGET_DIR_NAME)
+BUILD_DIR_TOOLCHAIN:=$(BUILD_DIR_BASE)/$(TOOLCHAIN_DIR_NAME)
+TOOLCHAIN_DIR:=$(TOPDIR)/staging_dir/$(TOOLCHAIN_DIR_NAME)
 STAMP_DIR:=$(BUILD_DIR)/stamp
 STAMP_DIR_HOST=$(BUILD_DIR_HOST)/stamp
 TARGET_ROOTFS_DIR?=$(if $(call qstrip,$(CONFIG_TARGET_ROOTFS_DIR)),$(call qstrip,$(CONFIG_TARGET_ROOTFS_DIR)),$(BUILD_DIR))
@@ -168,9 +168,16 @@ TARGET_PATH_PKG:=$(STAGING_DIR)/host/bin:$(TARGET_PATH)
 
 ifeq ($(CONFIG_SOFT_FLOAT),y)
   SOFT_FLOAT_CONFIG_OPTION:=--with-float=soft
-  TARGET_CFLAGS+= -msoft-float
+  ifeq ($(CONFIG_arm),y)
+    TARGET_CFLAGS+= -mfloat-abi=soft
+  else
+    TARGET_CFLAGS+= -msoft-float
+  endif
 else
   SOFT_FLOAT_CONFIG_OPTION:=
+  ifeq ($(CONFIG_arm),y)
+    TARGET_CFLAGS+= -mfloat-abi=hard
+  endif
 endif
 
 export PATH:=$(TARGET_PATH)

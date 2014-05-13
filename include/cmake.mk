@@ -24,9 +24,9 @@ else
     CCACHE:=$(STAGING_DIR_HOST)/bin/ccache
   endif
   CMAKE_C_COMPILER:=$(CCACHE)
-  CMAKE_C_COMPILER_ARG1:=$(filter-out ccache,$(TARGET_CC))
+  CMAKE_C_COMPILER_ARG1:=$(TARGET_CC_NOCACHE)
   CMAKE_CXX_COMPILER:=$(CCACHE)
-  CMAKE_CXX_COMPILER_ARG1:=$(filter-out ccache,$(TARGET_CXX))
+  CMAKE_CXX_COMPILER_ARG1:=$(TARGET_CXX_NOCACHE)
 endif
 
 define Build/Configure/Default
@@ -55,7 +55,7 @@ define Build/Configure/Default
 			-DCMAKE_STRIP=: \
 			-DCMAKE_INSTALL_PREFIX=/usr \
 			-DDL_LIBRARY=$(STAGING_DIR) \
-                        -DCMAKE_PREFIX_PATH=$(STAGING_DIR) \
+                        -DCMAKE_PREFIX_PATH=$(STAGING_DIR)/usr \
 			$(CMAKE_OPTIONS) \
 		$(CMAKE_SOURCE_DIR) \
 	)
