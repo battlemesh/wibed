@@ -25,6 +25,6 @@ rename() {
 	echo "Done!"
 }
 
-make -j4
+make -j4 V=s
 [ $? -eq 0 ] && rename
 
