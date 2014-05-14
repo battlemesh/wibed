@@ -33,6 +33,6 @@ rename() {
 	echo "Done!"
 }
 
-make -j$CPUS V=s
+make -j${CPUS} V=s
 [ $? -eq 0 ] && rename
 
