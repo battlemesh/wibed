@@ -5,8 +5,8 @@ error() {
 	exit 1
 }
 
-#TARGET=${1-ar71xx}
-TARGET=${1-mpc85xx}
+TARGET=${1-ar71xx}
+#TARGET=${1-mpc85xx}
 [ ! -d configs/$TARGET ] && error "Target '${TARGET}' does not exist"
 
 echo "Updating feeds"
@@ -18,10 +18,6 @@ echo "Target selected '${TARGET}'"
 
 echo "Copying target '${TARGET}' config"
 cp -f configs/$TARGET/config .config || error "Config for this target (${TARGET}) does not exist"
-
-export CONFIG_LOCALMIRROR=\"http://10.34.141.20/mirror.openwrt.org/\"
-echo "CONFIG_LOCALMIRROR=$CONFIG_LOCALMIRROR" >> .config
-echo "SETING CONFIG_LOCALMIRROR to $CONFIG_LOCALMIRROR"
 
 echo "Expanding config"
 make defconfig
